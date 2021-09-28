@@ -29,13 +29,36 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
+#include <godot/gdnative_interface.h>
+
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/godot.hpp>
+
 #include "noise_texture.h"
 #include "open_simplex_noise.h"
 
+using namespace godot;
+
 void register_opensimplex_types() {
-	GDREGISTER_CLASS(OpenSimplexNoise);
-	GDREGISTER_CLASS(NoiseTexture);
+	ClassDB::register_class<OpenSimplexNoise>();
+	ClassDB::register_class<NoiseTexture>();
+    printf("hello from gdextension!\n");
 }
 
-void unregister_opensimplex_types() {
+void unregister_opensimplex_types() {}
+
+extern "C" {
+
+// Initialization.
+
+GDNativeBool GDN_EXPORT gdopensimplex_library_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
+	godot::GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+
+	init_obj.register_scene_initializer(register_opensimplex_types);
+	init_obj.register_scene_terminator(unregister_opensimplex_types);
+
+	return init_obj.init();
+}
 }

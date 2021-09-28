@@ -30,7 +30,7 @@
 
 #include "open_simplex_noise.h"
 
-#include "core/core_string_names.h"
+#define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
 
 OpenSimplexNoise::OpenSimplexNoise() {
 	_init_seeds();
@@ -66,7 +66,7 @@ void OpenSimplexNoise::set_octaves(int p_octaves) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(p_octaves > MAX_OCTAVES, vformat("The number of OpenSimplexNoise octaves is limited to %d; ignoring the new value.", MAX_OCTAVES));
+	ERR_FAIL_COND_MSG(p_octaves > MAX_OCTAVES, "The number of OpenSimplexNoise octaves is limited to 9; ignoring the new value.");
 
 	octaves = CLAMP(p_octaves, 1, MAX_OCTAVES);
 	emit_changed();
@@ -97,28 +97,25 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 }
 
 Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height, const Vector2 &p_noise_offset) const {
-	Vector<uint8_t> data;
+	PackedByteArray data;
 	data.resize(p_width * p_height);
-
-	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
 			float v = get_noise_2d(float(j) + p_noise_offset.x, float(i) + p_noise_offset.y);
 			v = v * 0.5 + 0.5; // Normalize [0..1]
-			wd8[(i * p_width + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
+			data[(i * p_width + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
 		}
 	}
 
-	Ref<Image> image = memnew(Image(p_width, p_height, false, Image::FORMAT_L8, data));
+	Ref<Image> image;
+    image->create_from_data(p_width, p_height, false, Image::FORMAT_L8, data);
 	return image;
 }
 
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
-	Vector<uint8_t> data;
+	PackedByteArray data;
 	data.resize(p_size * p_size);
-
-	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_size; i++) {
 		for (int j = 0; j < p_size; j++) {
@@ -137,11 +134,12 @@ Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) const {
 			float v = get_noise_4d(x, y, z, w);
 
 			v = v * 0.5 + 0.5; // Normalize [0..1]
-			wd8[(i * p_size + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
+			data[(i * p_size + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
 		}
 	}
 
-	Ref<Image> image = memnew(Image(p_size, p_size, false, Image::FORMAT_L8, data));
+	Ref<Image> image;
+    image->create_from_data(p_size, p_size, false, Image::FORMAT_L8, data);
 	return image;
 }
 
@@ -161,7 +159,7 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &OpenSimplexNoise::set_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_lacunarity"), &OpenSimplexNoise::get_lacunarity);
 
-	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "noise_offset"), &OpenSimplexNoise::get_image, DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "noise_offset"), &OpenSimplexNoise::get_image);
 	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &OpenSimplexNoise::get_seamless_image);
 
 	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &OpenSimplexNoise::get_noise_1d);
@@ -173,7 +171,7 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_noise_3dv", "pos"), &OpenSimplexNoise::get_noise_3dv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, vformat("1,%d,1", MAX_OCTAVES)), "set_octaves", "get_octaves");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, "1,9,1"), "set_octaves", "get_octaves");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "period", PROPERTY_HINT_RANGE, "0.1,256.0,0.1"), "set_period", "get_period");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "persistence", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistence", "get_persistence");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");

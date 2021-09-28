@@ -33,11 +33,13 @@
 
 #include "open_simplex_noise.h"
 
-#include "core/io/image.h"
-#include "core/object/ref_counted.h"
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/property_editor.h"
+#include <godot_cpp/classes/editor_plugin.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/thread.hpp>
+
+#include <godot_cpp/core/binder_common.hpp>
 
 class NoiseTexture : public Texture2D {
 	GDCLASS(NoiseTexture, Texture2D);
@@ -71,7 +73,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_noise(Ref<OpenSimplexNoise> p_noise);
@@ -92,13 +94,13 @@ public:
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();
 
-	int get_width() const override;
-	int get_height() const override;
+	int get_width() const;
+	int get_height() const;
 
-	virtual RID get_rid() const override;
-	virtual bool has_alpha() const override { return false; }
+	virtual RID get_rid() const;
+	virtual bool has_alpha() const { return false; }
 
-	virtual Ref<Image> get_image() const override;
+	virtual Ref<Image> get_image() const;
 
 	NoiseTexture();
 	virtual ~NoiseTexture();

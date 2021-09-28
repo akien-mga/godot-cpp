@@ -31,15 +31,19 @@
 #ifndef OPEN_SIMPLEX_NOISE_H
 #define OPEN_SIMPLEX_NOISE_H
 
-#include "core/io/image.h"
-#include "core/object/ref_counted.h"
-#include "scene/resources/texture.h"
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/texture.hpp>
 
-#include "thirdparty/misc/open-simplex-noise.h"
+#include <godot_cpp/core/binder_common.hpp>
+
+#include "thirdparty/open-simplex-noise.h"
+
+using namespace godot;
 
 class OpenSimplexNoise : public Resource {
 	GDCLASS(OpenSimplexNoise, Resource);
-	OBJ_SAVE_TYPE(OpenSimplexNoise);
+	//OBJ_SAVE_TYPE(OpenSimplexNoise);
 
 	// The maximum number of octaves allowed. Note that these are statically allocated.
 	// Higher values become exponentially slower, so this shouldn't be set too high

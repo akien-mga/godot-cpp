@@ -30,7 +30,7 @@
 
 #include "noise_texture.h"
 
-#include "core/core_string_names.h"
+#include <godot_cpp/classes/rendering_server.hpp>
 
 NoiseTexture::NoiseTexture() {
 	noise = Ref<OpenSimplexNoise>();
@@ -39,15 +39,17 @@ NoiseTexture::NoiseTexture() {
 }
 
 NoiseTexture::~NoiseTexture() {
-	if (texture.is_valid()) {
-		RS::get_singleton()->free(texture);
+	if (texture.get_id() != 0) {
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 	noise_thread.wait_to_finish();
 }
 
 void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &NoiseTexture::get_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &NoiseTexture::get_height);
 
 	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture::set_noise);
 	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture::get_noise);
@@ -66,7 +68,7 @@ void NoiseTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture::_update_texture);
 	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture::_generate_texture);
-	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture::_thread_done);
+	ClassDB::bind_method(D_METHOD("_queue_update"), &NoiseTexture::_queue_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_height", "get_height");
@@ -88,11 +90,11 @@ void NoiseTexture::_validate_property(PropertyInfo &property) const {
 void NoiseTexture::_set_texture_image(const Ref<Image> &p_image) {
 	image = p_image;
 	if (image.is_valid()) {
-		if (texture.is_valid()) {
-			RID new_texture = RS::get_singleton()->texture_2d_create(p_image);
-			RS::get_singleton()->texture_replace(texture, new_texture);
+		if (texture.get_id() != 0) {
+			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
+			RenderingServer::get_singleton()->texture_replace(texture, new_texture);
 		} else {
-			texture = RS::get_singleton()->texture_2d_create(p_image);
+			texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
 		}
 	}
 	emit_changed();
@@ -102,14 +104,14 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 	_set_texture_image(p_image);
 	noise_thread.wait_to_finish();
 	if (regen_queued) {
-		noise_thread.start(_thread_function, this);
+		//noise_thread.start(_thread_function, this);
 		regen_queued = false;
 	}
 }
 
 void NoiseTexture::_thread_function(void *p_ud) {
 	NoiseTexture *tex = (NoiseTexture *)p_ud;
-	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
+	//tex->call_deferred("_thread_done", tex->_generate_texture());
 }
 
 void NoiseTexture::_queue_update() {
@@ -118,7 +120,7 @@ void NoiseTexture::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred(SNAME("_update_texture"));
+	call_deferred("_update_texture");
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {
@@ -150,21 +152,9 @@ void NoiseTexture::_update_texture() {
 		use_thread = false;
 		first_time = false;
 	}
-#ifdef NO_THREADS
 	use_thread = false;
-#endif
-	if (use_thread) {
-		if (!noise_thread.is_started()) {
-			noise_thread.start(_thread_function, this);
-			regen_queued = false;
-		} else {
-			regen_queued = true;
-		}
-
-	} else {
-		Ref<Image> image = _generate_texture();
-		_set_texture_image(image);
-	}
+    Ref<Image> image = _generate_texture();
+	_set_texture_image(image);
 	update_queued = false;
 }
 
@@ -173,11 +163,11 @@ void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 		return;
 	}
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
+		noise->disconnect("changed", Callable(this, "_queue_update"));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture::_queue_update));
+		noise->connect("changed", Callable(this, "_queue_update"));
 	}
 	_queue_update();
 }
@@ -264,8 +254,8 @@ Vector2 NoiseTexture::get_noise_offset() const {
 }
 
 RID NoiseTexture::get_rid() const {
-	if (!texture.is_valid()) {
-		texture = RS::get_singleton()->texture_2d_placeholder_create();
+	if (!texture.get_id() != 0) {
+		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 	}
 
 	return texture;
