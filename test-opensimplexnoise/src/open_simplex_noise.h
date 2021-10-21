@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPEN_SIMPLEX_NOISE_H
-#define OPEN_SIMPLEX_NOISE_H
+#ifndef OPEN_SIMPLEX_NOISE_EXT_H
+#define OPEN_SIMPLEX_NOISE_EXT_H
 
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -41,8 +41,8 @@
 
 using namespace godot;
 
-class OpenSimplexNoise : public Resource {
-	GDCLASS(OpenSimplexNoise, Resource);
+class OpenSimplexNoiseExt : public Resource {
+	GDCLASS(OpenSimplexNoiseExt, Resource);
 	//OBJ_SAVE_TYPE(OpenSimplexNoise);
 
 	// The maximum number of octaves allowed. Note that these are statically allocated.
@@ -59,8 +59,8 @@ class OpenSimplexNoise : public Resource {
 	float lacunarity = 2.0; // Controls period change across octaves. 2 is usually a good value to address all detail levels.
 
 public:
-	OpenSimplexNoise();
-	~OpenSimplexNoise();
+	OpenSimplexNoiseExt();
+	~OpenSimplexNoiseExt();
 
 	void _init_seeds();
 
@@ -100,4 +100,4 @@ protected:
 	static void _bind_methods();
 };
 
-#endif // OPEN_SIMPLEX_NOISE_H
+#endif // OPEN_SIMPLEX_NOISE_EXT_H

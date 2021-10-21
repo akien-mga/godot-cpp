@@ -41,13 +41,13 @@
 
 using namespace godot;
 
-void register_opensimplex_types() {
-	ClassDB::register_class<OpenSimplexNoise>();
-	ClassDB::register_class<NoiseTexture>();
+void register_opensimplexext_types() {
+	ClassDB::register_class<OpenSimplexNoiseExt>();
+	ClassDB::register_class<NoiseTextureExt>();
     printf("hello from gdextension!\n");
 }
 
-void unregister_opensimplex_types() {}
+void unregister_opensimplexext_types() {}
 
 extern "C" {
 
@@ -55,9 +55,10 @@ extern "C" {
 
 GDNativeBool GDN_EXPORT gdopensimplex_library_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
 	godot::GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+    printf("hey do you see me?\n");
 
-	init_obj.register_scene_initializer(register_opensimplex_types);
-	init_obj.register_scene_terminator(unregister_opensimplex_types);
+	init_obj.register_scene_initializer(register_opensimplexext_types);
+	init_obj.register_scene_terminator(unregister_opensimplexext_types);
 
 	return init_obj.init();
 }

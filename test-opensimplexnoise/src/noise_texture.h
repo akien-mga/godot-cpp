@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NOISE_TEXTURE_H
-#define NOISE_TEXTURE_H
+#ifndef NOISE_TEXTURE_EXT_H
+#define NOISE_TEXTURE_EXT_H
 
 #include "open_simplex_noise.h"
 
@@ -41,8 +41,8 @@
 
 #include <godot_cpp/core/binder_common.hpp>
 
-class NoiseTexture : public Texture2D {
-	GDCLASS(NoiseTexture, Texture2D);
+class NoiseTextureExt : public Texture2D {
+	GDCLASS(NoiseTextureExt, Texture2D);
 
 private:
 	Ref<Image> image;
@@ -56,7 +56,7 @@ private:
 	mutable RID texture;
 	uint32_t flags = 0;
 
-	Ref<OpenSimplexNoise> noise;
+	Ref<OpenSimplexNoiseExt> noise;
 	Vector2i size = Vector2i(512, 512);
 	Vector2 noise_offset;
 	bool seamless = false;
@@ -76,8 +76,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	void set_noise(Ref<OpenSimplexNoise> p_noise);
-	Ref<OpenSimplexNoise> get_noise();
+	void set_noise(Ref<OpenSimplexNoiseExt> p_noise);
+	Ref<OpenSimplexNoiseExt> get_noise();
 
 	void set_width(int p_width);
 	void set_height(int p_height);
@@ -102,8 +102,8 @@ public:
 
 	virtual Ref<Image> get_image() const;
 
-	NoiseTexture();
-	virtual ~NoiseTexture();
+	NoiseTextureExt();
+	virtual ~NoiseTextureExt();
 };
 
 #endif // NOISE_TEXTURE_H
